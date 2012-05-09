@@ -33,8 +33,6 @@ static XMLParser *xmlparser = nil;
 }
 
 - (NSString *)doEncode:(id)object {
-    // AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    
     NSMutableString *resString = [[[NSMutableString alloc] init] autorelease];
     
     [resString appendFormat:@"<%@>", NSStringFromClass([object class])];
@@ -42,9 +40,7 @@ static XMLParser *xmlparser = nil;
     NSDictionary *topDictionary = [object properties_aps];
     
     for(NSString *name in topDictionary) {
-//        DLog(@"key=%@", name);
         NSString *type = [topDictionary objectForKey:name];
-//        DLog(@"type=%@", type);
         NSRange range =[type rangeOfString:@"Array"];
         
         if(range.location != NSNotFound) {
@@ -56,7 +52,6 @@ static XMLParser *xmlparser = nil;
                 for (id obj in tmpArray) {
                     [resString appendString:[self doEncode:obj]];
                 }
-                //[resString appendFormat:@"</%@>",[appDelegate.obj_Dict valueForKey:name]];
                 [resString appendFormat:@"</%@>",name];
             }
         }else {
@@ -87,18 +82,12 @@ static XMLParser *xmlparser = nil;
 
 
 - (NSString *)doObjEncode:(id)object {
-    // AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    
     NSMutableString *resString = [[[NSMutableString alloc] init] autorelease];
-    
-//    [resString appendFormat:@"<%@>", NSStringFromClass([object class])];
     
     NSDictionary *topDictionary = [object properties_aps];
     
     for(NSString *name in topDictionary) {
-//        DLog(@"key=%@", name);
         NSString *type = [topDictionary objectForKey:name];
-//        DLog(@"type=%@", type);
         NSRange range =[type rangeOfString:@"Array"];
         
         if(range.location != NSNotFound) {
@@ -110,7 +99,6 @@ static XMLParser *xmlparser = nil;
                 for (id obj in tmpArray) {
                     [resString appendString:[self doEncode:obj]];
                 }
-                //[resString appendFormat:@"</%@>",[appDelegate.obj_Dict valueForKey:name]];
                 [resString appendFormat:@"</%@>",name];
             }
         }else {
@@ -133,9 +121,7 @@ static XMLParser *xmlparser = nil;
             }
         }
     }
-    
-//    [resString appendFormat:@"</%@>", NSStringFromClass([object class])];
-    
+        
     return  resString;
 }
 
@@ -148,23 +134,14 @@ static XMLParser *xmlparser = nil;
     return xml;
 }
 //有问题
-- (NSArray *)doDecodeListXML:(NSString *)xml name:(NSString *)listName path:(NSString *)path {
-//    DLog(@"path=%@", path);
-//    DLog(@"xml=%@", xml);
-    
+- (NSArray *)doDecodeListXML:(NSString *)xml name:(NSString *)listName path:(NSString *)path {    
     NSArray *array = nil;
-    
-//    ALog(@"===========================");
-//    ALog(@"listName=%@", listName);
-//    ALog(@"===========================");
     
     NSInteger from, to;
     NSString *tmpXml, *classString, *listNameString;
     
     // get class
     listNameString = [NSString stringWithFormat:@"<%@>", listName];
-    
-//    DLog(@"listNameString=%@", listNameString);
     
     from = ([xml rangeOfString:listNameString].location + listNameString.length);
     
@@ -174,9 +151,6 @@ static XMLParser *xmlparser = nil;
     to = [tmpXml rangeOfString:@">"].location;
     classString = [tmpXml substringWithRange:NSMakeRange(from, (to - from))];
     
-//    ALog(@"===========================");
-//    ALog(@"classString=%@", classString);
-//    ALog(@"===========================");
     // load XML string
     GDataXMLDocument *gxml = [[GDataXMLDocument alloc] initWithXMLString:xml options:0 error:nil];
     
@@ -184,47 +158,16 @@ static XMLParser *xmlparser = nil;
     NSArray *members = [gxml.rootElement nodesForXPath:path error:nil];
     
     for (GDataXMLElement *member in members) {
-//        ALog(@"xml===================%@",xml);
         NSArray *tmpArray = [self doDecodeXML:xml type:NSClassFromString(classString) path:[NSString stringWithFormat:@"%@/%@", path, classString]];
         array = [NSArray arrayWithArray:tmpArray];
     }
     
     [gxml release];
     
-//    DLog(@"count=%i", [array count]);
-    
     return array;
 }
 
-//obj
-//- (NSArray *)doObjListXML:(NSString *)xml name:(NSString *)classString path:(NSString *)path {
-//    //    DLog(@"path=%@", path);
-//    //    DLog(@"xml=%@", xml);
-//    
-//    NSArray *array = nil;
-//    
-////    ALog(@"===========================");
-////    ALog(@"Obj listName=%@", classString);
-////    ALog(@"===========================");
-////    ALog(@"===========================");
-////    ALog(@"Obj xml=%@", xml);
-////    ALog(@"===========================");
-////    ALog(@"Obj path=%@", path);
-////    ALog(@"===========================");
-//    // load XML string
-//
-//        NSArray *tmpArray = [self doDecodeXML:xml type:NSClassFromString(classString) path:path];
-//        array = [NSArray arrayWithArray:tmpArray];
-//
-//    
-//    return array;
-//}
-
-
-
 - (NSArray *)doDecodeXML:(NSString *)xml type:(Class)type path:(NSString *)path {
-//    DLog(@"xml=%@", xml);
-    
     NSMutableArray *array = [NSMutableArray array];
     
     NSDictionary *topDictionary = [type properties_aps];
@@ -240,16 +183,13 @@ static XMLParser *xmlparser = nil;
         
         for (NSString *key in [topDictionary allKeys]) {
             NSString *type = [topDictionary objectForKey:key];
-//            ALog(@"==========================");
-//            ALog(@"key:%@, type:%@", key, type);
-//            ALog(@"==========================");
+
             NSArray *names = [member elementsForName:key];
             if (names != nil && [names count] > 0) {
                 NSRange range =[type rangeOfString:@"Array"];
                 if (range.location != NSNotFound) {
                     GDataXMLElement *firstName = (GDataXMLElement *)[names objectAtIndex:0];
                     if (firstName != nil) {
-//                        DLog(@"firstName.name=%@", firstName.name);
                         NSArray *sarray = [self doDecodeListXML:firstName.XMLString name:firstName.name path:[NSString stringWithFormat:@"//%@", firstName.name]];
                         
                         [object setValue:sarray forKey:key];
@@ -259,32 +199,16 @@ static XMLParser *xmlparser = nil;
                     
                     if (range.location != NSNotFound) {
                         GDataXMLElement *firstName = (GDataXMLElement *)[names objectAtIndex:0];
-//                        ALog(@"===========key:%@ ===[NSString]value=%@", key,firstName.stringValue);
-//                        ALog(@"==================");
-                        [object setValue:firstName.stringValue forKey:key];
-                    }else {
-//                        DLog(@"type=%@", type);
-                        
-//                        GDataXMLElement *firstName = (GDataXMLElement *)[names objectAtIndex:0];
                         
                         NSInteger from, to;
                         NSString *dstType;
                         from = [type rangeOfString:@"@\""].location + @"@\"".length;
                         to = [type rangeOfString:@"\","].location;
                         dstType = [type substringWithRange:NSMakeRange(from, (to - from))];
-//                        DLog(@"type=%@", dstType);
-//                        ALog(@"==========================");
-//                        ALog(@"NSClassFromString:%@", dstType);
-//                        ALog(@"xml%@",xml);            
-//                        ALog(@"==========================");
-//                        ALog(@"key==================%@",key);
-//                        NSArray *sarray = [self doDecodeXML:xml type:NSClassFromString(dstType) path:[NSString stringWithFormat:@"%@/%@", path, key]];
                         
                         GDataXMLElement *firstName = (GDataXMLElement *)[names objectAtIndex:0];
                         NSArray *sarray = [self doDecodeXML:firstName.XMLString type:NSClassFromString(dstType) path:[NSString stringWithFormat:@"//%@", key]];
                         
-//                        [object setValue:sarray forKey:key];
-//                        NSLog(@"sarray count %i",[sarray count]);
                         if (sarray != nil && [sarray count] > 0) {
                             id tmpObject = [sarray objectAtIndex:0]; //只有1个对象
                             [object setValue:tmpObject forKey:key];
@@ -304,8 +228,6 @@ static XMLParser *xmlparser = nil;
 }
 
 - (NSArray *)decodeXML:(NSString *)xml {
-//    DLog(@"xml=%@", xml);
-    
     NSArray *array = nil;
     NSUInteger offset = [xml rangeOfString:XML_HEADER].location;
 	if (offset != NSNotFound) {
@@ -322,8 +244,6 @@ static XMLParser *xmlparser = nil;
         
         @try {
             NSString *classString = [dstXml substringWithRange:NSMakeRange(from, (to - from))];
-            
-//            DLog(@"<>%@<>", classString);
             
             @try {
                 array = [self doDecodeXML:dstXml type:NSClassFromString(classString) path:[NSString stringWithFormat:@"//%@", classString]];
